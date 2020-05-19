@@ -20,6 +20,7 @@ export default class HomePage extends Component {
 
     render() {
         const { books } = this.props;
+        console.log(books)
         if (!books || books.length === 0) {
             return null;
         }
