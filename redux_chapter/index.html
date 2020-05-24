@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="fruit">
+        <h1>FRUITS LIST</h1>
+
+        <input type="text" name="" id="fruit" placeholder="fruit">
+        <button id="fruitBtn">Add fruit</button>
+        <ul id="fruitsList"></ul>
+    </div>
+
+    <div class="flavor">
+        <h1>FLAVOR LIST</h1>
+    
+        <input type="text" name="" id="flavor" placeholder="flavor">
+        <button id="flavorBtn">Add flavor</button>
+        <ul id="flavorsList"></ul>
+    </div>
+
+
+    <script type="text/javascript">
+        //LIKE LIBRARY's code
+
+            const createStore = (reducer) => {
+                let state
+                let listeners = []
+
+                const getState = () => state
+
+                const subscribe = (listener) => {
+                    listeners.push(listener)
+                    return () => {
+                        listeners.filter((l) => l !== listener)
+                    }
+                }
+
+                const dispatch = (action) => {
+                    state = reducer(state, action);
+                    listeners.forEach((listener) => listener())
+                }
+
+                return {
+                    getState,
+                    subscribe,
+                    dispatch,
+                }
+            }
+
+
+            //APP CODE
+            const ADD_FLAVOR = "ADD_FLAVOR";
+            const DELETE_FLAVOR = "DELETE_FLAVOR";
+            const TOGGLE_FLAVOR = "TOGGLE_FLAVOR";
+            const ADD_FRUIT = "ADD_FRUIT";
+            const DELETE_FRUIT = "DELETE_FRUIT";
+
+
+            const flavorReducer = (state = [], action) => {
+                console.log(action, state)
+                switch (action.type) {
+                    case ADD_FLAVOR:
+                        return state.concat([action.flavor]);
+                    case DELETE_FLAVOR:
+                        return state.filter((flav) => flav.id !== action.id);
+                    case TOGGLE_FLAVOR:
+                        return state.map((flav) => flav.id !== action.id ? flav :
+                            Object.assign({}, flav, { desactivate: !flav.desactivate }));
+
+                    default:
+                        return state
+                }
+            }
+
+            const fruitReducer = (state = [], action) => {
+                switch (action.type) {
+                    case ADD_FRUIT:
+                        return state.concat([action.fruit]);
+                    case DELETE_FRUIT:
+                        return state.filter((fruit) => fruit.fruit !== action.fruit);
+
+                    default:
+                        return state;
+                }
+            }
+
+            const app = (state = {}, action) => {
+                return {
+                    flavors: flavorReducer(state.flavor, action),
+                    fruits: fruitReducer(state.fruit, action)
+                };
+            }
+
+            const store = createStore(app)
+
+            const fruitCreator = (fruit) => {
+                return {
+                    type: ADD_FRUIT,
+                    fruit
+                }
+            }
+
+            const deleteFlavorCreator = (id) => {
+                return {
+                    type: DELETE_FLAVOR,
+                    id
+                }
+            }
+
+            const flavorCreator = (flavor) => {
+                return {
+                    type: ADD_FLAVOR,
+                    flavor
+                }
+            }
+
+            const toggleCreator = (id) => {
+                return {
+                    type: TOGGLE_FLAVOR,
+                    id,
+                };
+            }
+
+            store.subscribe(() => {
+                const { fruits, flavors } = store.getState()
+
+                fruits.forEach(addFruitToDOM);
+                flavors.forEach(addFlavorToDOM);
+            })
+
+            // store.dispatch(
+            //     flavorCreator({
+            //         type: ADD_FLAVOR,
+            //         flavor: "Vanilla",
+            //     })
+            // );
+
+            // store.dispatch(
+            //     fruitCreator({
+            //         type: ADD_FRUIT,
+            //         flavor: "Banana",
+            //     })
+            // );
+
+            const addFruit = () => {
+                const input = document.getElementById('fruit')
+                const name = input.value
+
+                input.value = ''
+
+                store.dispatch(fruitCreator({
+                    name,
+                    id: new Date().toDateString(36)
+                }))
+            }
+
+            const addFlavor = () => {
+                    const input = document.getElementById('flavor')
+                    const name = input.value
+
+                    input.value = ''
+
+                    store.dispatch(flavorCreator({
+                        name,
+                        id: Math.floor(Math.random() * Math.floor(1000)),
+                        desactivate: false
+                    }))
+                }
+            
+            document.getElementById('fruitBtn').addEventListener('click', addFruit)
+            document.getElementById('flavorBtn').addEventListener('click', addFlavor)
+
+
+            const addFruitToDOM = (fruit) => {
+                const node = document.createElement('li')
+                const getText = document.createTextNode(fruit.name)
+
+                node.appendChild(getText)
+
+                document.getElementById('fruitsList')
+                    .appendChild(node)
+            }
+
+            const createRemoveButton = (onClick) => {
+                const removeBtn = document.createElement('button')
+                removeBtn.innerHTML = 'X'
+                removeBtn.addEventListener('click', onClick)
+                return removeBtn
+            }
+
+            const addFlavorToDOM = (flavor) => {
+                    const node = document.createElement('li')
+                    const getText = document.createTextNode(flavor.name)
+                    const removeBtn = createRemoveButton(() => {
+                        store.dispatch(deleteFlavorCreator(flavor.id))
+                    })
+                    node.appendChild(getText)
+                    node.appendChild(removeBtn)
+
+                    node.style.textDecoration = flavor.desactivate ? 'line-through' : 'none'
+                    node.addEventListener('click', () => {
+                        store.dispatch(toggleCreator(flavor.id))
+                    })
+                    document.getElementById('flavorsList')
+                        .appendChild(node)
+                }
+
+    </script>
+</body>
+</html>
