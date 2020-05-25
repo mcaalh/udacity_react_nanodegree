@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Redux Exercises</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/redux/3.7.2/redux.min.js"></script>
 </head>
 <body>
     <div class="fruit">
@@ -26,30 +27,30 @@
     <script type="text/javascript">
         //LIKE LIBRARY's code
 
-            const createStore = (reducer) => {
-                let state
-                let listeners = []
+            // const createStore = (reducer) => {
+            //     let state
+            //     let listeners = []
 
-                const getState = () => state
+            //     const getState = () => state
 
-                const subscribe = (listener) => {
-                    listeners.push(listener)
-                    return () => {
-                        listeners.filter((l) => l !== listener)
-                    }
-                }
+            //     const subscribe = (listener) => {
+            //         listeners.push(listener)
+            //         return () => {
+            //             listeners.filter((l) => l !== listener)
+            //         }
+            //     }
 
-                const dispatch = (action) => {
-                    state = reducer(state, action);
-                    listeners.forEach((listener) => listener())
-                }
+            //     const dispatch = (action) => {
+            //         state = reducer(state, action);
+            //         listeners.forEach((listener) => listener())
+            //     }
 
-                return {
-                    getState,
-                    subscribe,
-                    dispatch,
-                }
-            }
+            //     return {
+            //         getState,
+            //         subscribe,
+            //         dispatch,
+            //     }
+            // }
 
 
             //APP CODE
@@ -88,14 +89,17 @@
                 }
             }
 
-            const app = (state = {}, action) => {
-                return {
-                    flavors: flavorReducer(state.flavor, action),
-                    fruits: fruitReducer(state.fruit, action)
-                };
-            }
+            // const app = (state = {}, action) => {
+            //     return {
+            //         flavors: flavorReducer(state.flavor, action),
+            //         fruits: fruitReducer(state.fruit, action)
+            //     };
+            // }
 
-            const store = createStore(app)
+            const store = Redux.createStore(Redux.combineReducers({
+                flavors: flavorReducer,
+                fruits: fruitReducer,
+            }))
 
             const fruitCreator = (fruit) => {
                 return {
@@ -127,6 +131,9 @@
 
             store.subscribe(() => {
                 const { fruits, flavors } = store.getState()
+
+                document.getElementById('fruit').innerHTML = ''
+                document.getElementById('flavor').innerHTML = ''
 
                 fruits.forEach(addFruitToDOM);
                 flavors.forEach(addFlavorToDOM);
